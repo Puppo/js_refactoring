@@ -19,7 +19,10 @@
 const AVAILABLE_IMMEDIATELY_FILTER = "AVAILABLE_IMMEDIATELY";
 const FRESH_GRAD_FILTER = "FRESH_GRAD";
 
-function filter(candidates, filters) {
+const isOptionInList = (options = [], optionCode) =>
+  options.some(opt => optionCode === opt.code);
+
+function filterCandidates(candidates, filters = []) {
   if (!filters.length) return candidates;
 
   const availableImmediately =
@@ -28,22 +31,20 @@ function filter(candidates, filters) {
     !availableImmediately && filters.indexOf(FRESH_GRAD_FILTER) !== -1;
 
   return candidates.filter(({ options }) => {
-    if (!options || !options.length) {
+    if (!(options || []).length) {
       return false;
     }
 
     if (availableImmediately) {
-      return options.some(({ code }) => code === AVAILABLE_IMMEDIATELY_FILTER);
+      return isOptionInList(options, AVAILABLE_IMMEDIATELY_FILTER);
     }
 
     if (freshGrad) {
-      return options.some(({ code }) => code === FRESH_GRAD_FILTER);
+      return isOptionInList(options, FRESH_GRAD_FILTER);
     }
 
-    return filters.every(filterItem =>
-      options.some(({ code }) => filterItem === code)
-    );
+    return filters.every(filterItem => isOptionInList(options, filterItem));
   });
 }
 
-module.exports = filter;
+module.exports = filterCandidates;
