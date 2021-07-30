@@ -27,23 +27,22 @@ function filter(candidates, filters) {
   const freshGrad =
     !availableImmediately && filters.indexOf(FRESH_GRAD_FILTER) !== -1;
 
-  return candidates.filter(candidate => {
-    if (!candidate.options || !candidate.options.length) {
+  return candidates.filter(({ options }) => {
+    if (!options || !options.length) {
       return false;
     }
 
-    return filters.every(filterItem => {
-      return candidate.options.some(option => {
-        if (!availableImmediately && !freshGrad) {
-          return filterItem === option.code;
-        }
-        return (
-          (availableImmediately &&
-            option.code === AVAILABLE_IMMEDIATELY_FILTER) ||
-          (freshGrad && option.code === FRESH_GRAD_FILTER)
-        );
-      });
-    });
+    if (availableImmediately) {
+      return options.some(({ code }) => code === AVAILABLE_IMMEDIATELY_FILTER);
+    }
+
+    if (freshGrad) {
+      return options.some(({ code }) => code === FRESH_GRAD_FILTER);
+    }
+
+    return filters.every(filterItem =>
+      options.some(({ code }) => filterItem === code)
+    );
   });
 }
 
