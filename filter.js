@@ -16,51 +16,35 @@
  *   happy refactory :)
  */
 
-function filter(results, filters) {
-  var out = [];
-  var resultsLength = results.length;
-  var filterLength = filters.length;
-  var hasOptions;
-  var availableImmediately = false;
-  var freshGrad = false;
+const AVAILABLE_IMMEDIATELY_FILTER = "AVAILABLE_IMMEDIATELY";
+const FRESH_GRAD_FILTER = "FRESH_GRAD";
 
-  if (filterLength !== 0) {
-    if (filters.indexOf("AVAILABLE_IMMEDIATELY") !== -1) {
-      availableImmediately = true;
-    } else if (filters.indexOf("FRESH_GRAD") !== -1) {
-      freshGrad = true;
+function filter(candidates, filters) {
+  if (!filters.length) return candidates;
+
+  const availableImmediately =
+    filters.indexOf(AVAILABLE_IMMEDIATELY_FILTER) !== -1;
+  const freshGrad =
+    !availableImmediately && filters.indexOf(FRESH_GRAD_FILTER) !== -1;
+
+  return candidates.filter(candidate => {
+    if (!candidate.options || !candidate.options.length) {
+      return false;
     }
 
-    for (var i = resultsLength; i--; ) {
-      hasOptions = results[i].options && results[i].options.length > 0; //has.options
-
-      if (results[i].options) {
-        for (var k = filterLength; k--; ) {
-          const hasFilter = results[i].options.reverse().some(option => {
-            if (!availableImmediately && !freshGrad) {
-              if (filters[k].indexOf(option.code) !== -1) {
-                return true;
-              }
-            } else {
-              return (
-                (availableImmediately &&
-                  option.code === "AVAILABLE_IMMEDIATELY") ||
-                (freshGrad && option.code === "FRESH_GRAD")
-              );
-            }
-            return false;
-          });
-          hasOptions = hasOptions && hasFilter;
+    return filters.every(filterItem => {
+      return candidate.options.some(option => {
+        if (!availableImmediately && !freshGrad) {
+          return filterItem === option.code;
         }
-      }
-      if (hasOptions) {
-        out.unshift(results[i]);
-      }
-    }
-  } else {
-    out = results;
-  }
-  return out;
+        return (
+          (availableImmediately &&
+            option.code === AVAILABLE_IMMEDIATELY_FILTER) ||
+          (freshGrad && option.code === FRESH_GRAD_FILTER)
+        );
+      });
+    });
+  });
 }
 
 module.exports = filter;
